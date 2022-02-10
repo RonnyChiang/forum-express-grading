@@ -49,17 +49,18 @@ const userController = {
     })
       .then(user => {
         if (!user) throw new Error("User didn't exist!") //  如果找不到，回傳錯誤訊息，後面不執行
+        const set = new Set()
+        const commentNoDuplicate = user.toJSON().Comments.filter(item => !set.has(item.restaurantId) ? set.add(item.restaurantId) : false)
         const result = {
           ...user.toJSON(),
+          Comments: commentNoDuplicate,
+          commentRestaurantsCount: commentNoDuplicate?.length || 0,
           commentCount: user.Comments?.length || 0,
           followerCount: user.Followers?.length || 0,
           followeeCount: user.Followees?.length || 0,
           isFollowed: req.user.Followees.some(f => f.id === user.id),
           isFollowedMe: req.user.Followers.some(f => f.id === user.id)
         }
-        // const commentCount = user.Comments?.length || 0
-        // const followerCount = user.Followers?.length || 0
-        // const followeeCount = user.Followees?.length || 0
         res.render('users/profile', { user: result, selfUser })
       })
       .catch(err => next(err))

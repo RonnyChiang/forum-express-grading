@@ -9,7 +9,7 @@
         <div class="card-body">
           <h5 class="card-title">{{ user.name }}</h5>
           <p class="card-text">{{ user.email}}</p>
-          <p class="card-text">{{user.commentCount}} 家已評論的餐廳</p>
+          <p class="card-text">{{user.commentRestaurantsCount}} 家已評論的餐廳</p>
           {{#ifCond selfUser.id user.id }}
           <a href="/users/{{user.id}}/edit"><button class="btn btn-outline-success my-sm-0 my-2">Edit</button></a>
           {{/ifCond}}
@@ -72,7 +72,7 @@
     <div class="col-8">
       <div class="card ms-2">
         <div class="card-header">
-          {{ user.commentCount }} 家已評論的餐廳
+          {{ user.commentRestaurantsCount }} 家已評論的餐廳，共{{ user.commentCount}} 則評論。
         </div>
         <div class="card-body">
           <div class="row g-1">
