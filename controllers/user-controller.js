@@ -187,6 +187,7 @@ const userController = {
   },
   addFollowing: (req, res, next) => {
     const { userId } = req.params
+    const selfUser = getUser(req)
     return Promise.all([
       User.findByPk(userId),
       Followship.findOne({
@@ -198,6 +199,8 @@ const userController = {
     ])
       .then(([user, followship]) => {
         if (!user) throw new Error("User didn't exist!")
+        console.log(selfUser.id)
+        if (selfUser.id === Number(userId)) throw new Error("is yourself guys..")
         if (followship) throw new Error('You are already following this user!')
         return Followship.create({
           followerId: req.user.id,
