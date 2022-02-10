@@ -40,14 +40,27 @@ const userController = {
   getUser: (req, res, next) => {
     const requestUserId = req.params.id
     const selfUser = getUser(req)
-    console.log(selfUser)
     return User.findByPk(requestUserId, {
-      include: { model: Comment, include: Restaurant }
+      include: [
+        { model: Comment, include: Restaurant },
+        { model: User, as: 'Followers' },
+        { model: User, as: 'Followees' }
+      ]
     })
       .then(user => {
         if (!user) throw new Error("User didn't exist!") //  如果找不到，回傳錯誤訊息，後面不執行
-        const commentCount = user.Comments?.length || 0
-        res.render('users/profile', { user: user.toJSON(), commentCount, selfUser })
+        const result = {
+          ...user.toJSON(),
+          commentCount: user.Comments?.length || 0,
+          followerCount: user.Followers?.length || 0,
+          followeeCount: user.Followees?.length || 0,
+          isFollowed: req.user.Followees.some(f => f.id === user.id),
+          isFollowedMe: req.user.Followers.some(f => f.id === user.id)
+        }
+        // const commentCount = user.Comments?.length || 0
+        // const followerCount = user.Followers?.length || 0
+        // const followeeCount = user.Followees?.length || 0
+        res.render('users/profile', { user: result, selfUser })
       })
       .catch(err => next(err))
   },
