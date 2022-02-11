@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Restaurant.belongsTo(models.Category, { foreignKey: 'categoryId' })
       Restaurant.hasMany(models.Comment, { foreignKey: 'restaurantId' })
+      // Restaurant.hasMany(models.Favorite, { foreignKey: 'restaurantId' })
       Restaurant.belongsToMany(models.User, {
         through: models.Favorite,
         foreignKey: 'restaurantId',
@@ -30,19 +31,20 @@ module.exports = (sequelize, DataTypes) => {
         raw: true
       })
     })
-    static getTopFavoritedCount = (async (limit, User) => {
-      return await Restaurant.findAll({
-        include: [{ model: User, as: 'FavoritedUsers', duplicating: false }],  // User & FavoriteUsers is not difined
-        group: ['Restaurant.id'],
-        attributes: {
-          include: [
-            [sequelize.fn('COUNT', sequelize.col('FavoritedUsers.id')), 'favoritedCount']
-          ]
-        },
-        order: [[sequelize.fn('COUNT', sequelize.col('FavoritedUsers.id')), 'DESC']],
-        limit: [limit]
-      })
-    })
+    // static getTopFavoritedCount = (async (limit, User) => {
+    //   return await Restaurant.findAll({
+    //     include: [{ model: User, as: 'FavoritedUsers', duplicating: false }],  // User & FavoriteUsers is not difined
+    //     raw: true,
+    //     group: ['Restaurant.id'],
+    //     attributes: {
+    //       include: [
+    //         [sequelize.fn('COUNT', sequelize.col('Restaurant.id')), 'favoritedCount']
+    //       ]
+    //     },
+    //     order: [[sequelize.fn('COUNT', sequelize.col('Restaurant.id')), 'DESC']],
+    //     limit: [limit]
+    //   })
+    // })
   };
   Restaurant.init({
     name: DataTypes.STRING,
