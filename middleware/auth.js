@@ -19,8 +19,9 @@ const authenticatedAdmin = (req, res, next) => {
 // 判斷本人權限
 const authenticatedSelf = (req, res, next) => {
   if (ensureAuthenticated(req)) {
+    console.log('go')
     if (getUser(req).id === Number(req.params.id)) return next()
-    res.redirect(`/users/${req.params.id}`)
+    res.redirect('back')
   } else {
     res.redirect('/signin')
   }
