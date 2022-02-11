@@ -1,5 +1,6 @@
 const { Restaurant, Category, Comment, User, Favorite } = require('../models')
 const { getOffset, getPagination } = require('../helpers/pagination-helper')
+const sequelize = require('sequelize')
 const restaurantController = {
   getRestaurants: (req, res) => {
     const DEFAULT_LIMIT = 8
@@ -112,6 +113,18 @@ const restaurantController = {
   },
   getTopRestaurants: (req, res, next) => {
     return Restaurant.getTopFavoritedCount(10, User)
+      // return Restaurant.findAll({
+      //   include: [{ model: User, as: 'FavoritedUsers', duplicating: false }],  // User & FavoriteUsers is not difined
+      //   group: ['Restaurant.id'],
+      //   attributes: {
+      //     include: [
+      //       [sequelize.fn('COUNT', sequelize.col('FavoritedUsers.id')), 'favoritedCount']
+      //     ]
+      //   },
+      //   order: [[sequelize.fn('COUNT', sequelize.col('FavoritedUsers.id')), 'DESC']],
+      //   limit: 10
+      // })
+
       .then(restaurants => {
         const result = restaurants
           .map(restaurant => ({

@@ -30,12 +30,16 @@ module.exports = (sequelize, DataTypes) => {
         raw: true
       })
     })
-    static getTopFavoritedCount = (async (limit) => {
+    static getTopFavoritedCount = (async (limit, User) => {
       return await Restaurant.findAll({
-        include: [{ model: User, as: FavoritedUsers, duplicating: false }],  // User & FavoriteUsers is not difined
-        group: ['id'],
-        attributes: ['FavoriteUsers', [sequelize.fn('COUNT', 'restaurantId'), 'favoritedCount']],
-        order: [['favoritedCount', 'DESC']],
+        include: [{ model: User, as: 'FavoritedUsers', duplicating: false }],  // User & FavoriteUsers is not difined
+        group: ['Restaurant.id'],
+        attributes: {
+          include: [
+            [sequelize.fn('COUNT', sequelize.col('FavoritedUsers.id')), 'favoritedCount']
+          ]
+        },
+        order: [[sequelize.fn('COUNT', sequelize.col('FavoritedUsers.id')), 'DESC']],
         limit: [limit]
       })
     })
