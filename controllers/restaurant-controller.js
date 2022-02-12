@@ -115,53 +115,84 @@ const restaurantController = {
   getTopRestaurants: (req, res, next) => {
     // 失敗的資料庫查詢
     // return Restaurant.getTopFavoritedCount(10, User)
-    // return Restaurant.findAll({
-    //   include: [{ model: Favorite }],  
-    //   group: ['Restaurant.id'],
-    //   attributes: {
-    //     include: [
-    //       [sequelize.fn('COUNT', sequelize.col('favorites.id')), 'favoritedCount']
-    //     ]
-    //   },
-    //   order: [[sequelize.fn('COUNT', sequelize.col('favorites.id')), 'DESC']],
-    //   limit: 10
-    // })
-
-    //   .then(restaurants => {
-    //     const result = restaurants
-    //       .map(restaurant => ({
-    //         ...restaurant.toJSON(),
-    //         description: restaurant.description.substring(0, 50),
-    //         favoritedCount: restaurant.Favorites.length,
-    //         isFavorited: req.user.FavoritedRestaurants.some(f => f.id === restaurant.id),
-    //         isLiked: req.user.LikedRestaurants.some(l => l.id === restaurant.id) // R05test no
-    //       }))
-    //     res.render('top-restaurants', { restaurants: result })
-    //   })
-
     return Restaurant.findAll({
-      include: [
-        Category,
-        { model: User, as: 'FavoritedUsers' }]
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+                    SELECT COUNT(restaurant_id) as favoriteCount
+                    FROM Favorites
+                    WHERE Restaurant.id = Favorites.restaurant_id
+                )`),
+            'favoriteCount'
+          ]
+        ]
+      },
+      order: [
+        [sequelize.literal('favoriteCount'), 'DESC']
+      ],
+      group: [
+        [sequelize.literal('restaurant.id')]
+      ],
+      limit: 10
     })
+
+
+      // return Restaurant.findAll({
+      //   nest: true,
+      //   raw: true,
+      //   attributes: {
+      //     include: [
+      //       [Sequelize.fn('COUNT', Sequelize.col('FavoritedUsers.id')), 'favoritedCount']
+      //     ]
+      //   },
+      //   include: { model: User, as: 'FavoritedUsers', duplicating: false },
+      //   group: 'Restaurant.id',
+      //   order: [
+      //     [Sequelize.fn('Count', Sequelize.col('FavoritedUsers.id')), 'DESC']
+      //   ],
+      //   limit: 10
+      // })
+
       .then(restaurants => {
+        const favoritedRestaurantsId = req.user && req.user.FavoritedRestaurants.map(fr => fr.id)
         const topCount = 10 // 取 top 10
         const result = restaurants
           .map(restaurant => ({
             ...restaurant.toJSON(),
-            description: restaurant.description.substring(0, 50),
-            favoritedCount: restaurant.FavoritedUsers.length,
-            isFavorited: req.user.FavoritedRestaurants.some(f => f.id === restaurant.id),
+            // description: restaurant.description.substring(0, 50),
+            // favoritedCount: restaurant.FavoritedUsers.length,
+            // isFavorited: favoritedRestaurantsId?.some(id => id === restaurant.id),
             // isLiked: req.user.LikedRestaurants.some(l => l.id === restaurant.id) // R05test no
           }))
-          .sort((a, b) => b.favoritedCount - a.favoritedCount)
-          .map((restaurant, i) => ({
-            ...restaurant,
-            favoritedRank: i + 1,
-          }))
         console.log(result)
-        res.render('top-restaurants', { restaurants: result.slice(0, (topCount)) })
+        res.render('top-restaurants', { restaurants: result })
       })
+
+      // return Restaurant.findAll({
+      //   include: [
+      //     Category,
+      //     { model: User, as: 'FavoritedUsers' }]
+      // })
+      // .then(restaurants => {
+      //   const favoritedRestaurantsId = req.user && req.user.FavoritedRestaurants.map(fr => fr.id)
+      //   const topCount = 10 // 取 top 10
+      //   const result = restaurants
+      //     .map(restaurant => ({
+      //       ...restaurant.toJSON(),
+      //       description: restaurant.description.substring(0, 50),
+      //       favoritedCount: restaurant.FavoritedUsers.length,
+      //       isFavorited: favoritedRestaurantsId?.some(id => id === restaurant.id),
+      //       // isLiked: req.user.LikedRestaurants.some(l => l.id === restaurant.id) // R05test no
+      //     }))
+      //     .sort((a, b) => b.favoritedCount - a.favoritedCount)
+      //     .map((restaurant, i) => ({
+      //       ...restaurant,
+      //       favoritedRank: i + 1,
+      //     }))
+      //   console.log(result)
+      //   res.render('top-restaurants', { restaurants: result.slice(0, (topCount)) })
+      // })
       .catch(err => next(err))
   }
 }
