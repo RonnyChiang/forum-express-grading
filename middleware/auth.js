@@ -1,16 +1,16 @@
 
-const { ensureAuthenticated, getUser } = require('../helpers/auth-helpers')
+const helpers = require('../helpers/auth-helpers')
 const authenticated = (req, res, next) => {
   // if (req.isAuthenticated)
-  if (ensureAuthenticated(req)) {
+  if (helpers.ensureAuthenticated(req)) {
     return next()
   }
   res.redirect('/signin')
 }
 const authenticatedAdmin = (req, res, next) => {
   // if (req.isAuthenticated)
-  if (ensureAuthenticated(req)) {
-    if (getUser(req).isAdmin) return next()
+  if (helpers.ensureAuthenticated(req)) {
+    if (helpers.getUser(req).isAdmin) return next()
     res.redirect('/')
   } else {
     res.redirect('/signin')
@@ -18,9 +18,9 @@ const authenticatedAdmin = (req, res, next) => {
 }
 // 判斷本人權限
 const authenticatedSelf = (req, res, next) => {
-  if (ensureAuthenticated(req)) {
+  if (helpers.ensureAuthenticated(req)) {
     console.log('go')
-    if (getUser(req).id === Number(req.params.id)) return next()
+    if (helpers.getUser(req).id === Number(req.params.id)) return next()
     res.redirect('back')
   } else {
     res.redirect('/signin')
