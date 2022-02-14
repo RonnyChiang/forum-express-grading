@@ -1,12 +1,50 @@
-const { Restaurant, Category, Comment, User, Favorite } = require('../../models')
-const { getOffset, getPagination } = require('../../helpers/pagination-helper')
+const { Restaurant, Category, Comment, User, Favorite } = require('../models')
+const { getOffset, getPagination } = require('../helpers/pagination-helper')
 const sequelize = require('sequelize')
-const restaurantServices = require('../../services/restaurant-services')
-const restaurantController = {
-  getRestaurants: (req, res, next) => {
-    restaurantServices.getRestaurants(req, (err, data) => err ? next(err) : res.json(data))
-  }
-
+const restaurantServices = {
+  getRestaurants: (req, cb) => {
+    const DEFAULT_LIMIT = 8
+    let categoryId = req.query.categoryId || ''
+    const where = {}
+    const page = Number(req.query.page) || 1
+    const limit = Number(req.query.limit) || DEFAULT_LIMIT
+    const offset = getOffset(limit, page)
+    if (categoryId === 'null') {
+      where.categoryId = null
+      categoryId = 'null'
+    } else if (categoryId) {
+      where.categoryId = Number(categoryId)
+      categoryId = Number(categoryId)
+    }
+    return Promise.all([
+      Restaurant.findAndCountAll({
+        include: Category,
+        where: where,
+        limit,
+        offset,
+        nest: true,
+        raw: true
+      }),
+      Category.findAll({ raw: true })
+    ])
+      .then(([restaurants, categories]) => {
+        const favoritedRestaurantsId = req.user?.FavoritedRestaurants ? req.user.FavoritedRestaurants.map(fr => fr.id) : []
+        const likedRestaurantsId = req.user?.LikedRestaurants ? req.user.LikedRestaurants.map(lr => lr.id) : []
+        const data = restaurants.rows.map(r => ({
+          ...r,
+          description: r.description.substring(0, 50),
+          isFavorited: favoritedRestaurantsId.includes(r.id),
+          isLiked: likedRestaurantsId.includes(r.id)
+        }))
+        return cb(null, {
+          restaurants: data,
+          categories,
+          categoryId,
+          pagination: getPagination(limit, page, restaurants.count)
+        })
+      })
+      .catch(err => cb(err))
+  },
   // getRestaurant: (req, res, next) => {
   //   return Restaurant.findByPk(req.params.id, {
   //     include: [
@@ -127,4 +165,4 @@ const restaurantController = {
   //     .catch(err => next(err))
   // }
 }
-module.exports = restaurantController
+module.exports = restaurantServices
