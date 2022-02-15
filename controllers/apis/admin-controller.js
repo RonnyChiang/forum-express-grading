@@ -10,6 +10,9 @@ const adminController = {
   //     .then(categories => res.render('admin/create-restaurant', { categories }))
   //     .catch(err => next(err))
   // },
+  postRestaurant: (req, res, next) => {
+    adminServices.postRestaurant(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  },
   // postRestaurant: (req, res, next) => {
   //   const { name, tel, address, openingHours, description, categoryId } = req.body // 從 req.body 拿出表單裡的資料
   //   if (!name) throw new Error('Restaurant name is required!') // name 是必填，若發先是空值就會終止程式碼，並在畫面顯示錯誤提示
