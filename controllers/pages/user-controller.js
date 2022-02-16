@@ -27,32 +27,34 @@ const userController = {
     res.redirect('/signin')
   },
   getUser: (req, res, next) => {
-    const requestUserId = req.params.id
-    const selfUser = getUser(req)
-    return User.findByPk(requestUserId, {
-      include: [
-        { model: Comment, include: Restaurant },
-        { model: User, as: 'Followers' },
-        { model: User, as: 'Followees' }
-      ]
-    })
-      .then(user => {
-        if (!user) throw new Error("User didn't exist!") //  如果找不到，回傳錯誤訊息，後面不執行
-        const set = new Set()
-        const commentNoDuplicate = user.toJSON().Comments.filter(item => !set.has(item.restaurantId) ? set.add(item.restaurantId) : false)
-        const result = {
-          ...user.toJSON(),
-          Comments: commentNoDuplicate,
-          commentRestaurantsCount: commentNoDuplicate?.length || 0,
-          commentCount: user.Comments?.length || 0,
-          followerCount: user.Followers?.length || 0,
-          followeeCount: user.Followees?.length || 0,
-          isFollowed: req.user.Followees.some(f => f.id === user.id),
-          isFollowedMe: req.user.Followers.some(f => f.id === user.id)
-        }
-        res.render('users/profile', { user: result, selfUser })
-      })
-      .catch(err => next(err))
+    userServices.getUser(req, (err, data) => err ? next(err) : res.render('users/profile', data))
+    // const requestUserId = req.params.id
+    // const selfUser = getUser(req)
+    // return User.findByPk(requestUserId, {
+    //   include: [
+    //     { model: Comment, include: Restaurant },
+    //     { model: User, as: 'Followers' },
+    //     { model: User, as: 'Followees' }
+    //   ]
+    // })
+    //   .then(user => {
+    //     if (!user) throw new Error("User didn't exist!") //  如果找不到，回傳錯誤訊息，後面不執行
+    //     const set = new Set()
+    //     const commentNoDuplicate = user.toJSON().Comments.filter(item => !set.has(item.restaurantId) ? set.add(item.restaurantId) : false)
+    //     const result = {
+    //       ...user.toJSON(),
+    //       Comments: commentNoDuplicate,
+    //       commentRestaurantsCount: commentNoDuplicate?.length || 0,
+    //       commentCount: user.Comments?.length || 0,
+    //       followerCount: user.Followers?.length || 0,
+    //       followeeCount: user.Followees?.length || 0,
+    //       isFollowed: req.user.Followees.some(f => f.id === user.id),
+    //       isFollowedMe: req.user.Followers.some(f => f.id === user.id),
+    //     }
+    //     delete result.password
+    //     res.render('users/profile', { user: result, selfUser })
+    //   })
+    //   .catch(err => next(err))
   },
   editUser: (req, res, next) => {
     const id = req.params.id

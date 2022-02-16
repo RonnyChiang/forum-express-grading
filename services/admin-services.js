@@ -41,7 +41,14 @@ const adminServices = {
     return User.findAll({
       raw: true
     })
-      .then(users => cb(null, { users }))
+      .then(users => {
+        const result = users.map(user => {
+          delete user.password
+          return user
+        })
+        console.log(result)
+        cb(null, { users: result })
+      })
       .catch(err => cb(err))
   },
 }
