@@ -1,6 +1,7 @@
 const { User, Comment, Restaurant, Favorite, Like, Followship } = require('../models')
 const bcrypt = require('bcryptjs')
 const { getUser } = require('../helpers/auth-helpers')
+const { imgurFileHandler } = require('../helpers/file-helpers')
 const userServices = {
   signUp: (req, cb) => {
     if (req.body.password !== req.body.passwordCheck) throw new Error('Passwords do not match!')
@@ -48,6 +49,29 @@ const userServices = {
         }
         delete result.password
         return cb(null, { user: result, selfUser })
+      })
+      .catch(err => cb(err))
+  },
+  putUser: (req, cb) => {
+    const id = req.params.id
+    const { name } = req.body
+    if (!name) throw new Error('User name is required!')
+    const { file } = req
+    return Promise.all([
+      User.findByPk(id),
+      imgurFileHandler(file)
+    ])
+      .then(([user, filePath]) => {
+        if (!user) throw new Error("User didn't exist!")
+        return user.update({
+          name,
+          image: filePath || user.image
+        })
+      })
+      .then((user) => {
+        user = user.toJSON()
+        delete user.password
+        return cb(null, { user })
       })
       .catch(err => cb(err))
   },

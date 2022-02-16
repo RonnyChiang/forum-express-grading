@@ -28,33 +28,6 @@ const userController = {
   },
   getUser: (req, res, next) => {
     userServices.getUser(req, (err, data) => err ? next(err) : res.render('users/profile', data))
-    // const requestUserId = req.params.id
-    // const selfUser = getUser(req)
-    // return User.findByPk(requestUserId, {
-    //   include: [
-    //     { model: Comment, include: Restaurant },
-    //     { model: User, as: 'Followers' },
-    //     { model: User, as: 'Followees' }
-    //   ]
-    // })
-    //   .then(user => {
-    //     if (!user) throw new Error("User didn't exist!") //  如果找不到，回傳錯誤訊息，後面不執行
-    //     const set = new Set()
-    //     const commentNoDuplicate = user.toJSON().Comments.filter(item => !set.has(item.restaurantId) ? set.add(item.restaurantId) : false)
-    //     const result = {
-    //       ...user.toJSON(),
-    //       Comments: commentNoDuplicate,
-    //       commentRestaurantsCount: commentNoDuplicate?.length || 0,
-    //       commentCount: user.Comments?.length || 0,
-    //       followerCount: user.Followers?.length || 0,
-    //       followeeCount: user.Followees?.length || 0,
-    //       isFollowed: req.user.Followees.some(f => f.id === user.id),
-    //       isFollowedMe: req.user.Followers.some(f => f.id === user.id),
-    //     }
-    //     delete result.password
-    //     res.render('users/profile', { user: result, selfUser })
-    //   })
-    //   .catch(err => next(err))
   },
   editUser: (req, res, next) => {
     const id = req.params.id
@@ -63,26 +36,31 @@ const userController = {
       .catch(err => next(err))
   },
   putUser: (req, res, next) => {
-    const id = req.params.id
-    const { name } = req.body
-    if (!name) throw new Error('User name is required!')
-    const { file } = req
-    return Promise.all([
-      User.findByPk(id),
-      imgurFileHandler(file)
-    ])
-      .then(([user, filePath]) => {
-        if (!user) throw new Error("User didn't exist!")
-        return user.update({
-          name,
-          image: filePath || user.image
-        })
-      })
-      .then(() => {
-        req.flash('success_messages', '使用者資料編輯成功')
-        res.redirect(`/users/${id}`)
-      })
-      .catch(err => next(err))
+    userServices.putUser(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', '使用者資料編輯成功')
+      res.redirect(`/users/${data.user.id}`)
+    })
+    // const id = req.params.id
+    // const { name } = req.body
+    // if (!name) throw new Error('User name is required!')
+    // const { file } = req
+    // return Promise.all([
+    //   User.findByPk(id),
+    //   imgurFileHandler(file)
+    // ])
+    //   .then(([user, filePath]) => {
+    //     if (!user) throw new Error("User didn't exist!")
+    //     return user.update({
+    //       name,
+    //       image: filePath || user.image
+    //     })
+    //   })
+    //   .then(() => {
+    //     req.flash('success_messages', '使用者資料編輯成功')
+    //     res.redirect(`/users/${id}`)
+    //   })
+    //   .catch(err => next(err))
   },
   addFavorite: (req, res, next) => {
     const { restaurantId } = req.params
