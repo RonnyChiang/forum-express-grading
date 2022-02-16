@@ -92,17 +92,9 @@ const adminController = {
     //     .then(() => res.redirect('/admin/restaurants'))
     //     .catch(err => next(err))
   },
-  // getUsers: (req, res, next) => {
-  //   return User.findAll({
-  //     raw: true
-  //   })
-  //     .then(users =>
-  //       res.render('admin/users', {
-  //         users,
-  //         operator: req.user // 當前使用者
-  //       }))
-  //     .catch(err => next(err))
-  // },
+  getUsers: (req, res, next) => {
+    adminServices.getUsers(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  },
   // patchUser: async (req, res, next) => {
   //   try {
   //     const user = await User.findByPk(req.params.id)

@@ -37,6 +37,13 @@ const adminServices = {
       .then(newRestaurant => cb(null, { restaurant: newRestaurant }))
       .catch(err => cb(err))
   },
+  getUsers: (req, cb) => {
+    return User.findAll({
+      raw: true
+    })
+      .then(users => cb(null, { users }))
+      .catch(err => cb(err))
+  },
 }
 
 module.exports = adminServices
