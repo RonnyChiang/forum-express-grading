@@ -109,7 +109,7 @@ const restaurantController = {
         const result = restaurants
           .map(restaurant => ({
             ...restaurant.toJSON(),
-            description: restaurant.description.substring(0, 50),
+            description: restaurant.description ? restaurant.description.substring(0, 50) : '沒有描述',
             favoritedCount: restaurant.FavoritedUsers.length,
             isFavorited: req.user.FavoritedRestaurants.some(f => f.id === restaurant.id),
             // isLiked: req.user.LikedRestaurants.some(l => l.id === restaurant.id) // R05test no
@@ -119,7 +119,6 @@ const restaurantController = {
             ...restaurant,
             favoritedRank: i + 1,
           }))
-        console.log(result)
         res.render('top-restaurants', { restaurants: result.slice(0, (topCount)) })
       })
       .catch(err => next(err))

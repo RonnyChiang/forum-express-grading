@@ -9,6 +9,7 @@ const restController = require('../../controllers/apis/restaurant-controller')
 const userController = require('../../controllers/apis/user-controller')
 
 router.use('/admin', authenticated, authenticatedAdmin, admin)
+router.post('/signup', userController.signUp)
 router.post('/signin', passport.authenticate('local', { session: false }), userController.signIn)
 router.get('/restaurants', authenticated, restController.getRestaurants)
 router.use('/', apiErrorHandler)
